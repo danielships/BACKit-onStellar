@@ -112,6 +112,9 @@ importers:
       class-validator:
         specifier: ^0.14.3
         version: 0.14.4
+      compression:
+        specifier: ^1.8.0
+        version: 1.8.2
       cron:
         specifier: ^4.4.0
         version: 4.4.0
@@ -191,6 +194,9 @@ importers:
       "@nestjs/testing":
         specifier: ^11.0.1
         version: 11.1.17(@nestjs/common@11.1.17)(@nestjs/core@11.1.17)(@nestjs/platform-express@11.1.17)
+      "@types/compression":
+        specifier: ^1.8.1
+        version: 1.8.1
       "@types/cron":
         specifier: ^2.4.3
         version: 2.4.3
@@ -4987,6 +4993,16 @@ packages:
       "@types/connect": 3.4.38
       "@types/node": 22.19.15
 
+  /@types/compression@1.8.1:
+    resolution:
+      {
+        integrity: sha512-kCFuWS0ebDbmxs0AXYn6e2r2nrGAb5KwQhknjSPSPgJcGd8+HVSILlUyFhGqML2gk39HcG7D1ydW9/qpYkN00Q==,
+      }
+    dependencies:
+      "@types/express": 5.0.6
+      "@types/node": 22.19.15
+    dev: true
+
   /@types/connect@3.4.38:
     resolution:
       {
@@ -7793,6 +7809,35 @@ packages:
         integrity: sha512-T0+barUSQRTUQASh8bx02dl+DhF54GtIDY13Y3m9oWTklKbb3Wv974meRpeZ3lp1JpLVECWWNHC4vaG2XHXouQ==,
       }
     dev: true
+
+  /compressible@2.0.18:
+    resolution:
+      {
+        integrity: sha512-AF3r7P5dWxL8MxyITRMlORQNaOA2IkAFaTr4k7BUumjPtRpGDTZpl0Pb1XCO6JeDCBdp126Cgs9sMxqSjgYyRg==,
+      }
+    engines: { node: ">= 0.6" }
+    dependencies:
+      mime-db: 1.54.0
+    dev: false
+
+  /compression@1.8.2:
+    resolution:
+      {
+        integrity: sha512-o8vI5RE5A6EVVOd9o41jKp41aJom+QTEO/Bx8MYNjexMo/Bv2WOjUfZr+aL0WnYSgymUy6zeguqLTsIhV0gMvQ==,
+      }
+    engines: { node: ">= 0.8.0" }
+    dependencies:
+      bytes: 3.1.2
+      compressible: 2.0.18
+      debug: 2.6.9
+      destroy: 1.2.0
+      negotiator: 0.6.4
+      on-headers: 1.1.0
+      safe-buffer: 5.2.1
+      vary: 1.1.2
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /concat-map@0.0.1:
     resolution:
@@ -13832,6 +13877,14 @@ packages:
     engines: { node: ">= 0.8" }
     dependencies:
       ee-first: 1.1.1
+
+  /on-headers@1.1.0:
+    resolution:
+      {
+        integrity: sha512-737ZY3yNnXy37FHkQxPzt4UZ2UWPWiCZWLvFZ4fu5cueciegX0zGPnrlY6bwRg4FdQOe9YU8MkmJwGhoMybl8A==,
+      }
+    engines: { node: ">= 0.8" }
+    dev: false
 
   /once@1.4.0:
     resolution:

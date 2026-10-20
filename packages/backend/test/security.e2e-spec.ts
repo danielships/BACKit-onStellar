@@ -1,4 +1,4 @@
-import { Controller, Get, Module, Res } from '@nestjs/common';
+import { Body, Controller, Get, Module, Post, Res } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { Response } from 'express';
 import request from 'supertest';
@@ -9,6 +9,16 @@ class SecurityTestController {
   @Get('headers')
   getHeaders() {
     return { ok: true };
+  }
+
+  @Post('echo')
+  echo(@Body() body: Record<string, unknown>) {
+    return { received: Object.keys(body).length };
+  }
+
+  @Get('large')
+  large() {
+    return { data: 'x'.repeat(4096) };
   }
 
   @Get('cookie')
@@ -93,5 +103,26 @@ describe('HTTP security hardening', () => {
     expect(cookie).toContain('HttpOnly');
     expect(cookie).toContain('Secure');
     expect(cookie).toContain('SameSite=Lax');
+  });
+
+  it('rejects JSON bodies over the size limit with 413', async () => {
+    await request(app.getHttpServer())
+      .post('/security/echo')
+      .send({ blob: 'x'.repeat(2 * 1024 * 1024) })
+      .expect(413);
+  });
+
+  it('gzips responses over the threshold and leaves small ones alone', async () => {
+    const large = await request(app.getHttpServer())
+      .get('/security/large')
+      .set('Accept-Encoding', 'gzip')
+      .expect(200);
+    expect(large.headers['content-encoding']).toBe('gzip');
+
+    const small = await request(app.getHttpServer())
+      .get('/security/headers')
+      .set('Accept-Encoding', 'gzip')
+      .expect(200);
+    expect(small.headers['content-encoding']).toBeUndefined();
   });
 });

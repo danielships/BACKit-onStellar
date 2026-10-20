@@ -59,6 +59,9 @@ import { IdempotencyInterceptor } from './idempotency/idempotency.interceptor';
       database: process.env.DB_NAME || process.env.POSTGRES_DB || 'backit',
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV === 'development',
+      // Retry the initial connection instead of crashing when Postgres is still starting.
+      retryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS || '10', 10),
+      retryDelay: parseInt(process.env.DB_RETRY_DELAY_MS || '3000', 10),
     }),
     CallsModule,
     HealthModule,

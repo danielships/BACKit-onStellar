@@ -40,7 +40,7 @@ export class HealthController {
   @ApiOperation({
     summary: 'Health check',
     description:
-      'Checks PostgreSQL, Stellar RPC, and process memory. Returns 200 only if all critical subsystems are healthy.',
+      'Checks PostgreSQL, Redis, Stellar RPC, and process memory. Returns 200 only if all critical subsystems are healthy.',
   })
   @ApiOkResponse({
     description: 'All subsystems healthy',
@@ -49,6 +49,7 @@ export class HealthController {
         status: 'ok',
         database: 'connected',
         stellar_rpc: 'reachable',
+        redis: 'connected',
         memory_heap_mb: 42,
         timestamp: '2024-01-26T10:30:00.000Z',
       },
@@ -68,14 +69,19 @@ export class HealthController {
     },
   })
   async check() {
-    const [database, stellar_rpc] = await Promise.all([
+    const [database, stellar_rpc, redis] = await Promise.all([
       this.checkDatabase(),
       this.checkStellarRpc(),
+      this.checkRedis(),
     ]);
     const memory_heap_mb = this.checkMemory();
 
     const status =
-      database === 'connected' && stellar_rpc === 'reachable' ? 'ok' : 'error';
+      database === 'connected' &&
+      stellar_rpc === 'reachable' &&
+      redis === 'connected'
+        ? 'ok'
+        : 'error';
 
     const payload = {
       status,
@@ -83,6 +89,7 @@ export class HealthController {
       apiVersion: 'v1',
       database,
       stellar_rpc,
+      redis,
       memory_heap_mb,
       timestamp: new Date().toISOString(),
     };
@@ -187,6 +194,22 @@ export class HealthController {
     try {
       await this.dataSource.query('SELECT 1');
       return 'connected';
+    } catch {
+      return 'disconnected';
+    }
+  }
+
+  /** Pings Redis through the lease service; a hung connection counts as disconnected after 2s. */
+  private async checkRedis(): Promise<'connected' | 'disconnected'> {
+    try {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('redis ping timeout')), 2000).unref(),
+      );
+      const cluster = await Promise.race([
+        this.indexerLease.getCluster(),
+        timeout,
+      ]);
+      return cluster.redis === 'connected' ? 'connected' : 'disconnected';
     } catch {
       return 'disconnected';
     }

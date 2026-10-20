@@ -1,6 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
+import compression from 'compression';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { randomUUID } from 'node:crypto';
 
 const DEFAULT_ALLOWED_ORIGINS = [
@@ -56,6 +58,14 @@ export function configureHttpSecurity(
   };
 
   secureApp.disable('x-powered-by');
+
+  // JSON body limit (413 Payload Too Large when exceeded); override with BODY_SIZE_LIMIT.
+  (app as NestExpressApplication).useBodyParser('json', {
+    limit: process.env.BODY_SIZE_LIMIT || '1mb',
+  });
+
+  // gzip responses of 1kb or more.
+  secureApp.use(compression({ threshold: 1024 }));
 
   secureApp.use((request: Request, response: Response, next: NextFunction) => {
     const requestId = getRequestId(request);
